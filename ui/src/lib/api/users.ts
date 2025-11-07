@@ -2,7 +2,7 @@
  * Users API service
  */
 import { apiClient } from '@/lib/api-client'
-import type { UserResponse } from '@/lib/api/auth'
+import type { UserResponse, UserCreateRequest } from '@/lib/api/auth'
 
 export interface PaginatedResponse<T> {
   items: T[]
@@ -78,7 +78,7 @@ export const usersApi = {
   /**
    * Create new user (superuser only)
    */
-  async create(userData: Partial<UserResponse>): Promise<UIUser> {
+  async create(userData: UserCreateRequest): Promise<UIUser> {
     const response = await apiClient.post<UserResponse>('/api/v1/users', userData)
     return mapUserToUI(response.data)
   },

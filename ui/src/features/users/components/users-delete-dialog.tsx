@@ -42,7 +42,6 @@ export function UsersDeleteDialog({
       onOpenChange={onOpenChange}
       handleConfirm={handleDelete}
       disabled={value.trim() !== currentRow.username || deleteMutation.isPending}
-      isPending={deleteMutation.isPending}
       title={
         <span className='text-destructive'>
           <AlertTriangle

@@ -3,7 +3,8 @@
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { usersApi, type UIUser, type UsersListParams } from '@/lib/api/users'
+import { usersApi, type UsersListParams } from '@/lib/api/users'
+import type { UserResponse } from '@/lib/api/auth'
 
 // Query keys
 export const userKeys = {
@@ -62,7 +63,7 @@ export function useUpdateUser() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: Partial<UIUser> }) =>
+    mutationFn: ({ id, data }: { id: number; data: Partial<UserResponse> }) =>
       usersApi.update(id, data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: userKeys.lists() })

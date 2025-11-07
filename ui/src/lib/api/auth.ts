@@ -38,6 +38,17 @@ export interface UserResponse {
   updated_at: string
 }
 
+export interface UserCreateRequest {
+  email: string
+  password: string
+  username?: string
+  first_name?: string
+  last_name?: string
+  phone_number?: string
+  role?: 'superadmin' | 'admin' | 'manager' | 'cashier'
+  status?: 'active' | 'inactive' | 'invited' | 'suspended'
+}
+
 export const authApi = {
   /**
    * Login with email and password

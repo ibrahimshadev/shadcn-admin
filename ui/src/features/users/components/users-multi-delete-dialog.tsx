@@ -59,7 +59,6 @@ export function UsersMultiDeleteDialog<TData>({
       onOpenChange={onOpenChange}
       handleConfirm={handleDelete}
       disabled={value.trim() !== CONFIRM_WORD || deleteMutation.isPending}
-      isPending={deleteMutation.isPending}
       title={
         <span className='text-destructive'>
           <AlertTriangle

@@ -162,7 +162,7 @@ export function UsersActionDialog({
           email: values.email,
           phone_number: values.phoneNumber,
           password: values.password,
-          role: values.role,
+          role: values.role as 'superadmin' | 'admin' | 'manager' | 'cashier',
         })
       }
 
