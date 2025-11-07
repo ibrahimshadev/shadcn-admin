@@ -32,8 +32,8 @@ api/
 │   └── main.py                # FastAPI application
 ├── alembic/                   # Database migrations
 │   └── versions/              # Migration files
-├── pyproject.toml            # Project config & dependencies (uv)
-├── requirements.txt          # Python dependencies (legacy)
+├── pyproject.toml            # Project config & dependencies
+├── uv.lock                   # Dependency lockfile
 ├── alembic.ini              # Alembic configuration
 ├── .env.example              # Environment variables template
 ├── run.py                    # Development server runner
@@ -68,10 +68,10 @@ api/
 
 ## Setup
 
-### 1. Install uv (Fast Python Package Manager)
+### 1. Install uv
 
 ```bash
-# Install uv (if not already installed)
+# Install uv
 pip install uv
 ```
 
@@ -79,12 +79,7 @@ pip install uv
 
 ```bash
 cd api
-
-# Using uv (recommended - much faster)
 uv sync
-
-# Or using pip (traditional method)
-pip install -r requirements.txt
 ```
 
 ### 3. Configure Environment
@@ -97,14 +92,11 @@ cp .env.example .env
 ### 4. Run the Server
 
 ```bash
-# Using uv (recommended)
+# Using uv
 uv run python run.py
 
-# Using the run script directly (requires pip install)
-python run.py
-
 # Or using uvicorn directly
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 The API will be available at:
@@ -299,7 +291,7 @@ def test_register():
 
 ## Production Deployment
 
-### Using Docker (with uv)
+### Using Docker
 
 ```dockerfile
 FROM python:3.11-slim
@@ -311,32 +303,17 @@ RUN pip install --no-cache-dir uv
 
 # Copy dependency files
 COPY pyproject.toml .
-COPY requirements.txt .
+COPY uv.lock .
 
-# Install dependencies with uv (much faster)
-RUN uv pip install --system -r pyproject.toml
+# Install dependencies with uv
+RUN uv sync --frozen --no-dev
 
 # Copy application code
 COPY . .
 
 # Run migrations and start server
 CMD uv run alembic upgrade head && \
-    uvicorn app.main:app --host 0.0.0.0 --port 8000
-```
-
-### Using Docker (traditional)
-
-```dockerfile
-FROM python:3.11-slim
-
-WORKDIR /app
-
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-COPY . .
-
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+    uv run uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
 
 ### Environment Variables
