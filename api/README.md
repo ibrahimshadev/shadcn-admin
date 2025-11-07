@@ -30,7 +30,11 @@ api/
 │   ├── middleware/            # Custom middleware
 │   ├── utils/                 # Utility functions
 │   └── main.py                # FastAPI application
-├── requirements.txt           # Python dependencies
+├── alembic/                   # Database migrations
+│   └── versions/              # Migration files
+├── pyproject.toml            # Project config & dependencies (uv)
+├── requirements.txt          # Python dependencies (legacy)
+├── alembic.ini              # Alembic configuration
 ├── .env.example              # Environment variables template
 ├── run.py                    # Development server runner
 └── README.md                 # This file
@@ -49,27 +53,54 @@ api/
 - ✅ **Dependency Injection** - FastAPI's dependency system
 - ✅ **Service Layer** - Separation of business logic
 - ✅ **Type Hints** - Full Python typing support
+- ✅ **uv Package Manager** - 10-100x faster than pip
+- ✅ **Alembic Migrations** - Version-controlled database schema
+
+## Why uv?
+
+[uv](https://github.com/astral-sh/uv) is an extremely fast Python package installer and resolver:
+
+- 🚀 **10-100x faster** than pip
+- 🔒 **Deterministic** installs with lockfiles
+- 🎯 **Drop-in replacement** for pip
+- 💾 **Global cache** saves disk space
+- 🦀 **Written in Rust** for maximum performance
 
 ## Setup
 
-### 1. Install Dependencies
+### 1. Install uv (Fast Python Package Manager)
+
+```bash
+# Install uv (if not already installed)
+pip install uv
+```
+
+### 2. Install Dependencies
 
 ```bash
 cd api
+
+# Using uv (recommended - much faster)
+uv sync
+
+# Or using pip (traditional method)
 pip install -r requirements.txt
 ```
 
-### 2. Configure Environment
+### 3. Configure Environment
 
 ```bash
 cp .env.example .env
 # Edit .env and set your SECRET_KEY (use: openssl rand -hex 32)
 ```
 
-### 3. Run the Server
+### 4. Run the Server
 
 ```bash
-# Using the run script
+# Using uv (recommended)
+uv run python run.py
+
+# Using the run script directly (requires pip install)
 python run.py
 
 # Or using uvicorn directly
@@ -213,22 +244,41 @@ BACKEND_CORS_ORIGINS=http://localhost:5173,http://localhost:3000
 
 ### Database Migrations
 
-For production, use Alembic for migrations:
+Alembic is already configured for database migrations:
 
 ```bash
-# Initialize Alembic
-alembic init alembic
+# Create a new migration (auto-detect model changes)
+uv run alembic revision --autogenerate -m "Description of changes"
 
-# Create migration
-alembic revision --autogenerate -m "Description"
+# Apply migrations
+uv run alembic upgrade head
 
-# Apply migration
-alembic upgrade head
+# Rollback last migration
+uv run alembic downgrade -1
+
+# View migration history
+uv run alembic history
+
+# Check current version
+uv run alembic current
 ```
 
 ## Testing
 
-Create tests in a `tests/` directory:
+Run tests using pytest (included in dev dependencies):
+
+```bash
+# Run all tests
+uv run pytest
+
+# Run with coverage
+uv run pytest --cov=app
+
+# Run specific test file
+uv run pytest tests/test_auth.py
+```
+
+Example test:
 
 ```python
 from fastapi.testclient import TestClient
@@ -249,7 +299,32 @@ def test_register():
 
 ## Production Deployment
 
-### Using Docker
+### Using Docker (with uv)
+
+```dockerfile
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install uv
+RUN pip install --no-cache-dir uv
+
+# Copy dependency files
+COPY pyproject.toml .
+COPY requirements.txt .
+
+# Install dependencies with uv (much faster)
+RUN uv pip install --system -r pyproject.toml
+
+# Copy application code
+COPY . .
+
+# Run migrations and start server
+CMD uv run alembic upgrade head && \
+    uvicorn app.main:app --host 0.0.0.0 --port 8000
+```
+
+### Using Docker (traditional)
 
 ```dockerfile
 FROM python:3.11-slim
